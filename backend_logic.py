@@ -197,32 +197,83 @@ def is_inclusion(v):
 def rows_are_duplicate(row1, row2, columns):
 
     # -------------------------------------------------
-    # SPECIAL COLUMN RULE (CASE 1)
+    # WINDOW COLUMN LOGIC (CASE 1 + CASE 2)
     # -------------------------------------------------
 
-    special_cols = {"W4", "R7", "R0", "R8", "V7", "V8", "V0", "V9"}
+    window_cols = {"W4", "R7", "R0", "R8", "V7", "V8", "V0", "V9"}
 
-    # Find special columns present in the dataframe
-    present_special_cols = [c for c in columns if c in special_cols]
+    present_window_cols = [c for c in columns if c in window_cols]
 
-    # If special columns exist, check if they are empty in both rows
-    if present_special_cols:
+    if present_window_cols:
 
-        all_empty = True
+        # Check if any inclusion value exists in window columns
+        window_has_values = False
 
-        for col in present_special_cols:
+        for col in present_window_cols:
 
             vals1 = normalize_cell(row1[col])
             vals2 = normalize_cell(row2[col])
 
             if vals1 or vals2:
-                all_empty = False
+                window_has_values = True
                 break
 
-        # Case 1 → special columns exist but values are empty
-        # Continue with existing logic (no change required)
-        if all_empty:
-            pass
+        # -------------------------------------------------
+        # CASE 2 → Window columns contain values
+        # -------------------------------------------------
+        if window_has_values:
+
+            main_columns = [c for c in columns if c not in window_cols]
+            window_columns = present_window_cols
+
+            # Create reduced rows (without window columns)
+            row1_main = row1[main_columns]
+            row2_main = row2[main_columns]
+
+            # Run original logic on rows without window columns
+            for col in main_columns:
+
+                vals1 = normalize_cell(row1_main[col])
+                vals2 = normalize_cell(row2_main[col])
+
+                if not vals1 or not vals2:
+                    continue
+
+                if (
+                    all(is_inclusion(v) for v in vals1)
+                    and all(is_inclusion(v) for v in vals2)
+                ):
+                    if vals1[0] != vals2[0]:
+                        return False
+
+            for col in main_columns:
+
+                vals1 = normalize_cell(row1_main[col])
+                vals2 = normalize_cell(row2_main[col])
+
+                if not vals1 or not vals2:
+                    continue
+
+                if any(is_exclusion(v) for v in vals1) and all(is_inclusion(v) for v in vals2):
+                    incl = vals2[0]
+                    if f"!{incl}" in vals1:
+                        return False
+
+                if any(is_exclusion(v) for v in vals2) and all(is_inclusion(v) for v in vals1):
+                    incl = vals1[0]
+                    if f"!{incl}" in vals2:
+                        return False
+
+            # If we reached here → main rows ARE duplicates
+            # Now check window overlap (to be implemented later)
+
+            row1_windows = row1[window_columns]
+            row2_windows = row2[window_columns]
+
+            if window_overlap(row1_windows, row2_windows):
+                return True
+            else:
+                return False
 
     # -------------------------------------------------
     # ORIGINAL LOGIC (UNCHANGED)
