@@ -196,6 +196,38 @@ def is_inclusion(v):
 
 def rows_are_duplicate(row1, row2, columns):
 
+    # -------------------------------------------------
+    # SPECIAL COLUMN RULE (CASE 1)
+    # -------------------------------------------------
+
+    special_cols = {"W4", "R7", "R0", "R8", "V7", "V8", "V0", "V9"}
+
+    # Find special columns present in the dataframe
+    present_special_cols = [c for c in columns if c in special_cols]
+
+    # If special columns exist, check if they are empty in both rows
+    if present_special_cols:
+
+        all_empty = True
+
+        for col in present_special_cols:
+
+            vals1 = normalize_cell(row1[col])
+            vals2 = normalize_cell(row2[col])
+
+            if vals1 or vals2:
+                all_empty = False
+                break
+
+        # Case 1 → special columns exist but values are empty
+        # Continue with existing logic (no change required)
+        if all_empty:
+            pass
+
+    # -------------------------------------------------
+    # ORIGINAL LOGIC (UNCHANGED)
+    # -------------------------------------------------
+
     for col in columns:
 
         vals1 = normalize_cell(row1[col])
