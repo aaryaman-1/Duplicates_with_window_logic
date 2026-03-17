@@ -647,7 +647,11 @@ def extract_filtered_excel_inputs(
 
     df_filtered = df_filtered[
         (df_filtered["Date application OEV debut"] <= date_value) &
-        (df_filtered["Date application OEV fin"] >= date_value)
+        (df_filtered["Date application OEV fin"] > date_value)
+    ]
+
+    df_filtered = df_filtered[
+    df_filtered["Date application OEV debut"] != df_filtered["Date application OEV fin"]
     ]
 
     other_product_numbers = []
