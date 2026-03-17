@@ -193,6 +193,144 @@ def is_exclusion(v):
 def is_inclusion(v):
     return not v.startswith("!")
 
+def window_overlap(row1_windows, row2_windows):
+
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    # ---------------------------------------
+    # Step 1: Extract window elements
+    # ---------------------------------------
+
+    def extract_windows(row):
+        windows = []
+        for col, val in row.items():
+            vals = normalize_cell(val)
+            if vals:
+                windows.append(f"{col}{vals[0]}")
+        return windows
+
+    row1_w = extract_windows(row1_windows)
+    row2_w = extract_windows(row2_windows)
+
+    # ---------------------------------------
+    # Step 2: Generate reference dataframe
+    # (UNCHANGED logic reused)
+    # ---------------------------------------
+
+    prefixes = ["W4", "R7", "R0", "R8", "V7", "V8", "V0", "V9"]
+    half = 4
+    block_size = 8
+
+    def quarter_from_date(date):
+        m, y = date.month, date.year
+        if m <= 3: return "A", 0, y
+        elif m <= 6: return "B", 1, y
+        elif m <= 9: return "C", 2, y
+        else: return "D", 3, y
+
+    def sequence_element_from_index(idx):
+        block = idx // block_size
+        pos = idx % block_size
+        prefix = prefixes[pos]
+        value = 10 + block if pos < half else 9 + block
+        return f"{prefix}{value:02d}"
+
+    def get_window_from_date(date_string):
+        date = datetime.strptime(date_string, "%Y-%m-%d")
+        q, q_index, year = quarter_from_date(date)
+        ref_year, ref_q = 2020, 0
+        idx = (year - ref_year) * 4 + (q_index - ref_q)
+        return idx
+
+    def quarter_from_index(idx):
+        quarters = ["A", "B", "C", "D"]
+        year = 2020 + (idx // 4)
+        return f"{quarters[idx % 4]}{year}"
+
+    french_date = datetime.now(ZoneInfo("Europe/Paris")).date()
+    idx_now = get_window_from_date(french_date.strftime("%Y-%m-%d"))
+
+    start_idx = idx_now - 10
+    end_idx = idx_now + 6
+
+    windows = []
+    quarters = []
+
+    for idx in range(start_idx, end_idx + 1):
+        windows.append(sequence_element_from_index(idx))
+        quarters.append(quarter_from_index(idx))
+
+    types = ["closing"] * 9 + ["opening"] * 8
+
+    df = pd.DataFrame({
+        "Window": windows,
+        "type": types,
+        "quarter": quarters
+    })
+
+    # ---------------------------------------
+    # Step 3: Convert windows → date range
+    # ---------------------------------------
+
+    def get_date_range(window_list):
+
+        if not window_list:
+            return (
+                french_date, 
+                datetime.max
+            )
+
+        start_date = None
+        end_date = None
+
+        for w in window_list:
+
+            match = df[df["Window"] == w]
+
+            if match.empty:
+                continue
+
+            w_type = match.iloc[0]["type"]
+            q = match.iloc[0]["quarter"]
+
+            q_letter = q[0]
+            year = int(q[1:])
+
+            # Opening → start date
+            if w_type == "opening":
+
+                month_map = {"A": 1, "B": 4, "C": 7, "D": 10}
+                start_date = datetime(year, month_map[q_letter], 2)
+
+            # Closing → end date (+2 years)
+            else:
+
+                month_map = {"A": 1, "B": 4, "C": 7, "D": 10}
+                end_date = datetime(year + 2, month_map[q_letter], 1)
+
+        if start_date is None:
+            start_date = datetime.min
+
+        if end_date is None:
+            end_date = datetime.max
+
+        if start_date > end_date:
+            return None, None
+
+        return start_date, end_date
+
+    r1_start, r1_end = get_date_range(row1_w)
+    r2_start, r2_end = get_date_range(row2_w)
+
+    if r1_start is None or r2_start is None:
+        return False
+
+    # ---------------------------------------
+    # Step 4: Overlap check (inclusive)
+    # ---------------------------------------
+
+    return (r1_start <= r2_end) and (r2_start <= r1_end)
 
 def rows_are_duplicate(row1, row2, columns):
 
