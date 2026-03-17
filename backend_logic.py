@@ -316,7 +316,7 @@ def window_overlap(row1_windows, row2_windows):
             end_date = datetime.max
 
         if start_date > end_date:
-            return None, None
+            raise ValueError("Invalid date range: window start_date is greater than end_date")
 
         return start_date, end_date
 
