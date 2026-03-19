@@ -495,7 +495,9 @@ def find_duplicates_one_to_many(
         new_ecdv,
         other_ecdvs,
         new_product_number=None,
-        other_product_numbers=None
+        other_product_numbers=None,
+        new_quantity=None,
+        other_quantities=None
 ):
 
     duplicates_global = False
@@ -659,7 +661,7 @@ def extract_filtered_excel_inputs(
     ]
 
     df_filtered = df_filtered[
-    df_filtered["Date application OEV debut"] != df_filtered["Date application OEV fin"]
+        df_filtered["Date application OEV debut"] != df_filtered["Date application OEV fin"]
     ]
 
     # ✅ CHANGE: filter by quantity
@@ -669,17 +671,20 @@ def extract_filtered_excel_inputs(
 
     other_product_numbers = []
     other_ecdvs = []
+    other_quantities = []
 
     for _, row in df_filtered.iterrows():
 
         product = str(row["05 Numero produit"]).strip()
         ecdv = normalize_excel_ecdv_format(row["ECDV"])
+        qty = row["Coefficient de montage"]
 
         if product and ecdv:
             other_product_numbers.append(product)
             other_ecdvs.append(ecdv)
+            other_quantities.append(qty)
 
-    return other_product_numbers, other_ecdvs
+    return other_product_numbers, other_ecdvs, other_quantities
 # =========================================================
 # One new wrapper function
 # =========================================================
@@ -688,7 +693,9 @@ def find_duplicates_multi_new(
         new_ecdvs,
         other_ecdvs,
         new_product_numbers,
-        other_product_numbers
+        other_product_numbers,
+        new_quantities=None,
+        other_quantities=None
 ):
     """
     Wrapper layer.
@@ -706,18 +713,20 @@ def find_duplicates_multi_new(
     # NEW RULE:
     # Remove existing rows whose product numbers already exist in NEW list
     filtered_existing = [
-        (pn, ev)
-        for pn, ev in zip(other_product_numbers, other_ecdvs)
+        (pn, ev, qty)
+        for pn, ev, qty in zip(other_product_numbers, other_ecdvs, other_quantities)
         if pn not in set(new_product_numbers)
     ]
 
     if filtered_existing:
-        filtered_other_product_numbers, filtered_other_ecdvs = zip(*filtered_existing)
+        filtered_other_product_numbers, filtered_other_ecdvs, filtered_other_quantities = zip(*filtered_existing)
         filtered_other_product_numbers = list(filtered_other_product_numbers)
         filtered_other_ecdvs = list(filtered_other_ecdvs)
+        filtered_other_quantities = list(filtered_other_quantities)
     else:
         filtered_other_product_numbers = []
         filtered_other_ecdvs = []
+        filtered_other_quantities = []
 
     for i in range(len(new_ecdvs)):
 
@@ -728,7 +737,9 @@ def find_duplicates_multi_new(
                 new_ecdvs[i],
                 filtered_other_ecdvs,
                 new_product_numbers[i],
-                filtered_other_product_numbers
+                filtered_other_product_numbers,
+                new_quantities[i],
+                filtered_other_quantities
             )
 
         text = buffer.getvalue().strip()
@@ -750,7 +761,9 @@ def find_duplicates_multi_new(
                     new_ecdvs[i],
                     [new_ecdvs[j]],
                     new_product_numbers[i],
-                    [new_product_numbers[j]]
+                    [new_product_numbers[j]],
+                    new_quantities[i],
+                    [new_quantities[j]]
                 )
 
             text = buffer.getvalue().strip()
