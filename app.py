@@ -234,7 +234,7 @@ elif mode == "Excel File Extraction":
             # ----------------------------------------------------
             for i in range(len(new_product_numbers)):
 
-                other_product_numbers, other_ecdvs = extract_filtered_excel_inputs(
+                other_product_numbers, other_ecdvs, other_quantities = extract_filtered_excel_inputs(
                     df_master=df_master,
                     code_function=code_function,
                     new_product_NFCdate=new_dates[i],
@@ -245,7 +245,9 @@ elif mode == "Excel File Extraction":
                     [new_ecdvs[i]],
                     other_ecdvs,
                     [new_product_numbers[i]],
-                    other_product_numbers
+                    other_product_numbers,
+                    [new_quantities[i]],
+                    other_quantities
                 )
 
             # ----------------------------------------------------
@@ -255,6 +257,8 @@ elif mode == "Excel File Extraction":
                 new_ecdvs,
                 [],
                 new_product_numbers,
+                [],
+                new_quantities,
                 []
             )
 
