@@ -169,7 +169,7 @@ elif mode == "Excel File Extraction":
 
     with col2:
         new_quantities_text = st.text_area(
-            "Quantities (one per line)",
+            "Quantities",
             height=200
         )
 
