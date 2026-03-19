@@ -605,6 +605,12 @@ def load_excel_master_dataframe(file_path):
 
     df_master = df_master[required_columns].copy()
 
+    # ✅ CHANGE: convert Coefficient to numeric
+    df_master["Coefficient de montage"] = pd.to_numeric(
+        df_master["Coefficient de montage"],
+        errors="coerce"
+    )
+
     df_master["Date application OEV debut"] = pd.to_datetime(
         df_master["Date application OEV debut"],
         errors="coerce",
@@ -635,7 +641,8 @@ def load_excel_master_dataframe(file_path):
 def extract_filtered_excel_inputs(
     df_master,
     code_function,
-    new_product_NFCdate
+    new_product_NFCdate,
+    new_quantity   # ✅ CHANGE: new parameter
 ):
 
     date_value = pd.to_datetime(new_product_NFCdate)
@@ -653,6 +660,11 @@ def extract_filtered_excel_inputs(
 
     df_filtered = df_filtered[
     df_filtered["Date application OEV debut"] != df_filtered["Date application OEV fin"]
+    ]
+
+    # ✅ CHANGE: filter by quantity
+    df_filtered = df_filtered[
+        df_filtered["Coefficient de montage"] == new_quantity
     ]
 
     other_product_numbers = []
