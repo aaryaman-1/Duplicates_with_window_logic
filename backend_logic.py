@@ -703,6 +703,13 @@ def find_duplicates_multi_new(
     Only controls output formatting.
     """
 
+    # ---- FIX: handle None inputs (Manual Mode safety) ----
+    if new_quantities is None:
+        new_quantities = [None] * len(new_ecdvs)
+
+    if other_quantities is None:
+        other_quantities = [None] * len(other_ecdvs)
+
     overall_output = []
     duplicates_found_anywhere = False
 
@@ -738,7 +745,7 @@ def find_duplicates_multi_new(
                 filtered_other_ecdvs,
                 new_product_numbers[i],
                 filtered_other_product_numbers,
-                new_quantities[i],
+                new_quantities[i] if new_quantities else None,
                 filtered_other_quantities
             )
 
@@ -762,8 +769,8 @@ def find_duplicates_multi_new(
                     [new_ecdvs[j]],
                     new_product_numbers[i],
                     [new_product_numbers[j]],
-                    new_quantities[i],
-                    [new_quantities[j]]
+                    new_quantities[i] if new_quantities else None,
+                    [new_quantities[j]] if new_quantities else None
                 )
 
             text = buffer.getvalue().strip()
