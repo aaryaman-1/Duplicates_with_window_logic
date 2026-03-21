@@ -41,8 +41,11 @@ def multiline_to_list(text):
 
 def clean_output_text(output: str):
     """
-    (Unused now — retained to avoid modifying structure)
+    Formatting layer only.
+    - If duplicates exist → remove all 'No duplicates...' lines
+    - If no duplicates exist → show only one line
     """
+
     duplicate_phrase = "the following combinations are forming duplicates"
     no_dup_line = "No duplicates are forming with the existing parts."
 
@@ -67,7 +70,7 @@ mode = st.radio(
 )
 
 # =========================================================
-# MANUAL MODE (UPDATED OUTPUT ONLY)
+# MANUAL MODE (UNCHANGED)
 # =========================================================
 
 if mode == "Manual User Input":
@@ -130,40 +133,32 @@ Manual Mode Notes:
             st.error("Mismatch: Existing Product Numbers vs Existing ECDVs.")
             st.stop()
 
-        # ✅ NEW STRUCTURED OUTPUT
-        rows = find_duplicates_multi_new(
-            new_ecdvs,
-            other_ecdvs,
-            new_product_numbers,
-            other_product_numbers
-        )
+        buffer = io.StringIO()
 
-        if rows:
-            df = pd.DataFrame(rows)
-
-            st.subheader("Duplicate Table")
-            st.dataframe(df, use_container_width=True)
-
-            csv = df.to_csv(index=False).encode("utf-8")
-
-            st.download_button(
-                label="Download as CSV",
-                data=csv,
-                file_name="duplicates_output.csv",
-                mime="text/csv"
+        with contextlib.redirect_stdout(buffer):
+            find_duplicates_multi_new(
+                new_ecdvs,
+                other_ecdvs,
+                new_product_numbers,
+                other_product_numbers
             )
-        else:
-            st.info("No duplicates are forming with the existing parts.")
+
+        output = buffer.getvalue()
+        output = clean_output_text(output)
+
+        st.subheader("Output")
+        st.code(output, language="text")
 
 
 # =========================================================
-# EXCEL MODE (UPDATED OUTPUT ONLY)
+# EXCEL MODE (UPDATED)
 # =========================================================
 
 elif mode == "Excel File Extraction":
 
     st.subheader("New / Modified Parts")
 
+    # Updated layout with ratios
     col1, col2, col3, col4 = st.columns([2, 1, 4, 2])
 
     with col1:
@@ -210,10 +205,11 @@ elif mode == "Excel File Extraction":
             st.stop()
 
         new_product_numbers = multiline_to_list(new_product_numbers_text)
-        new_quantities = [float(q) for q in multiline_to_list(new_quantities_text)]
+        new_quantities = multiline_to_list(new_quantities_text)
         new_ecdvs = multiline_to_list(new_ecdvs_text)
         new_dates = multiline_to_list(new_dates_text)
 
+        # Validation checks
         if len(new_product_numbers) != len(new_ecdvs):
             st.error("Mismatch: New Product Numbers vs ECDVs.")
             st.stop()
@@ -226,56 +222,43 @@ elif mode == "Excel File Extraction":
             st.error("Mismatch: Product Numbers vs Quantities.")
             st.stop()
 
+        # Cached Excel load
         df_master = cached_load_excel(uploaded_file)
 
-        all_rows = []
+        buffer = io.StringIO()
 
-        # NEW vs EXISTING
-        for i in range(len(new_product_numbers)):
+        with contextlib.redirect_stdout(buffer):
 
-            other_product_numbers, other_ecdvs, other_quantities = extract_filtered_excel_inputs(
-                df_master=df_master,
-                code_function=code_function,
-                new_product_NFCdate=new_dates[i],
-                new_quantity=new_quantities[i]
+            # ----------------------------------------------------
+            # NEW vs EXISTING
+            # ----------------------------------------------------
+            for i in range(len(new_product_numbers)):
+
+                other_product_numbers, other_ecdvs = extract_filtered_excel_inputs(
+                    df_master=df_master,
+                    code_function=code_function,
+                    new_product_NFCdate=new_dates[i]
+                )
+
+                find_duplicates_multi_new(
+                    [new_ecdvs[i]],
+                    other_ecdvs,
+                    [new_product_numbers[i]],
+                    other_product_numbers
+                )
+
+            # ----------------------------------------------------
+            # NEW vs NEW
+            # ----------------------------------------------------
+            find_duplicates_multi_new(
+                new_ecdvs,
+                [],
+                new_product_numbers,
+                []
             )
 
-            rows = find_duplicates_multi_new(
-                [new_ecdvs[i]],
-                other_ecdvs,
-                [new_product_numbers[i]],
-                other_product_numbers,
-                [new_quantities[i]],
-                other_quantities
-            )
+        output = buffer.getvalue()
+        output = clean_output_text(output)
 
-            all_rows.extend(rows)
-
-        # NEW vs NEW
-        rows = find_duplicates_multi_new(
-            new_ecdvs,
-            [],
-            new_product_numbers,
-            [],
-            new_quantities,
-            []
-        )
-
-        all_rows.extend(rows)
-
-        if all_rows:
-            df = pd.DataFrame(all_rows)
-
-            st.subheader("Duplicate Table")
-            st.dataframe(df, use_container_width=True)
-
-            csv = df.to_csv(index=False).encode("utf-8")
-
-            st.download_button(
-                label="Download as CSV",
-                data=csv,
-                file_name="duplicates_output.csv",
-                mime="text/csv"
-            )
-        else:
-            st.info("No duplicates are forming with the existing parts.")
+        st.subheader("Output")
+        st.code(output, language="text")
