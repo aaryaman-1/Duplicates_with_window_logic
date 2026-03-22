@@ -143,6 +143,7 @@ Manual Mode Notes:
 
             st.subheader("Duplicate Table")
             st.dataframe(df, use_container_width=True)
+            #st.table(df)
 
             csv = df.to_csv(index=False).encode("utf-8")
 
@@ -267,8 +268,8 @@ elif mode == "Excel File Extraction":
             df = pd.DataFrame(all_rows)
 
             st.subheader("Duplicate Table")
-
             st.dataframe(df, use_container_width=True)
+            #st.table(df)
 
             csv = df.to_csv(index=False).encode("utf-8")
 
