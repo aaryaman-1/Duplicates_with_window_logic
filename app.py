@@ -288,7 +288,7 @@ elif mode == "Excel File Extraction":
             st.download_button(
                 label="Download as TSV",
                 data=csv,
-                file_name="duplicates_output.tsv",
+                file_name="duplicates_output.xlsx",
                 mime="text/csv"
             )
         else:
