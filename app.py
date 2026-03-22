@@ -286,9 +286,9 @@ elif mode == "Excel File Extraction":
             csv = df.to_csv(index=False, sep='\t').encode("utf-8")
 
             st.download_button(
-                label="Download as TSV",
+                label="Download as CSV",
                 data=csv,
-                file_name="duplicates_output.xlsx",
+                file_name="duplicates_output.csv",
                 mime="text/csv"
             )
         else:
