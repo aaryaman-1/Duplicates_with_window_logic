@@ -553,8 +553,8 @@ def find_duplicates_one_to_many(
 
             unique_pairs = list(dict.fromkeys(duplicate_pairs))
 
-            part1 = f"ref. {new_product_number}" if new_product_number else "part 1"
-            part2 = f"ref. {other_product_numbers[idx]}" if other_product_numbers else f"part {idx+2}"
+            part1 = f"{new_product_number}" if new_product_number else "part 1"
+            part2 = f"{other_product_numbers[idx]}" if other_product_numbers else f"part {idx+2}"
 
             result_rows.append({
                 "duplicate ref 1": part1,
