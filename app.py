@@ -150,12 +150,12 @@ Manual Mode Notes:
                 tsv_data = df.to_csv(index=False, sep='\t')
                 st.code(tsv_data, language="text")
 
-            csv = df.to_csv(index=False, sep='\t').encode("utf-8")
+            csv = df.to_csv(index=False).encode("utf-8")
 
             st.download_button(
-                label="Download as TSV",
+                label="Download as CSV",
                 data=csv,
-                file_name="duplicates_output.tsv",
+                file_name="duplicates_output.csv",
                 mime="text/csv"
             )
         else:
@@ -283,7 +283,7 @@ elif mode == "Excel File Extraction":
                 tsv_data = df.to_csv(index=False, sep='\t')
                 st.code(tsv_data, language="text")
 
-            csv = df.to_csv(index=False, sep='\t').encode("utf-8")
+            csv = df.to_csv(index=False).encode("utf-8")
 
             st.download_button(
                 label="Download as CSV",
