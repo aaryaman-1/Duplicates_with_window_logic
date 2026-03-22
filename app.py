@@ -144,13 +144,18 @@ Manual Mode Notes:
             st.subheader("Duplicate Table")
             st.dataframe(df, use_container_width=True)
             #st.table(df)
+            # Create an expander with the copyable text
+            with st.expander("📋 Copy Table for Excel"):
+                # Convert to Tab-Separated format (Excel loves tabs)
+                tsv_data = df.to_csv(index=False, sep='\t')
+                st.code(tsv_data, language="text")
 
-            csv = df.to_csv(index=False).encode("utf-8")
+            csv = df.to_csv(index=False, sep='\t').encode("utf-8")
 
             st.download_button(
-                label="Download as CSV",
+                label="Download as TSV",
                 data=csv,
-                file_name="duplicates_output.csv",
+                file_name="duplicates_output.tsv",
                 mime="text/csv"
             )
         else:
@@ -270,21 +275,20 @@ elif mode == "Excel File Extraction":
             st.subheader("Duplicate Table")
 
             st.dataframe(df, use_container_width=True)
+            #st.table(df)
 
             # Create an expander with the copyable text
             with st.expander("📋 Copy Table for Excel"):
                 # Convert to Tab-Separated format (Excel loves tabs)
                 tsv_data = df.to_csv(index=False, sep='\t')
                 st.code(tsv_data, language="text")
-            #st.dataframe(df, use_container_width=True)
-            #st.table(df)
 
-            csv = df.to_csv(index=False).encode("utf-8")
+            csv = df.to_csv(index=False, sep='\t').encode("utf-8")
 
             st.download_button(
-                label="Download as CSV",
+                label="Download as TSV",
                 data=csv,
-                file_name="duplicates_output.csv",
+                file_name="duplicates_output.tsv",
                 mime="text/csv"
             )
         else:
