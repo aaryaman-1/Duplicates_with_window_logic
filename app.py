@@ -267,7 +267,35 @@ elif mode == "Excel File Extraction":
             df = pd.DataFrame(all_rows)
 
             st.subheader("Duplicate Table")
-            st.table(df)
+            import streamlit as st
+
+            # --- STEP 1: Define and Inject the CSS ---
+            st.markdown(
+                """
+                <style>
+                /* This targets the container of the dataframe */
+                [data-testid="stTable"] {
+                    width: 100%;
+                }
+    
+                /* This forces the cells to wrap text and breaks long words */
+                [data-testid="stDataFrame"] td {
+                    white-space: normal !important;
+                    word-wrap: break-word !important;
+                    min-width: 200px; /* Optional: prevents columns from getting too thin */
+                }
+
+                /* This ensures the row height can grow (only works on some Streamlit versions) */
+                .thead tr th, .tbody tr td {
+                    height: auto !important;
+                    white-space: normal !important;
+                }
+                </style>
+                """,
+                unsafe_allow_html=True
+            )
+
+            st.dataframe(df, use_container_width=True)
 
             csv = df.to_csv(index=False).encode("utf-8")
 
