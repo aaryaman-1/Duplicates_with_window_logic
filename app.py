@@ -267,16 +267,7 @@ elif mode == "Excel File Extraction":
             df = pd.DataFrame(all_rows)
 
             st.subheader("Duplicate Table")
-            st.dataframe(
-                df,
-                use_container_width=True, # Forces the table to stretch to the full UI width
-                column_config={
-                    "combinations forming duplicate": st.column_config.TextColumn(
-                        "Combinations Forming Duplicate",
-                        width="large",  # Options: "small", "medium", "large" or a pixel value like 600
-                    )
-                }
-            )
+            st.table(df)
 
             csv = df.to_csv(index=False).encode("utf-8")
 
