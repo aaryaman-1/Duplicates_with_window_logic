@@ -295,7 +295,7 @@ elif mode == "Excel File Extraction":
                 unsafe_allow_html=True
             )
 
-            st.dataframe(df, use_container_width=True)
+            st.table(df)
 
             csv = df.to_csv(index=False).encode("utf-8")
 
