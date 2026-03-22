@@ -528,7 +528,8 @@ def find_duplicates_one_to_many(
     for idx, ecdv in enumerate(other_ecdvs):
 
         if new_product_number and other_product_numbers:
-            if new_product_number == other_product_numbers[idx]:
+            # Only skip if BOTH the product number AND the quantity are identical
+            if new_product_number == other_product_numbers[idx] and new_quantity == other_quantities[idx]:
                 continue
 
         new_cm, new_family = extract_cm_family(new_ecdv)
