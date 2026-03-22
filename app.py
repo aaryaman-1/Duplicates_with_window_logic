@@ -269,11 +269,7 @@ elif mode == "Excel File Extraction":
 
             st.subheader("Duplicate Table")
 
-            # Your dataframe
-            df = pd.read_csv("Current_output.csv")
-
-            st.subheader("Results Table")
-            st.dataframe(df)
+            st.dataframe(df, use_container_width=True)
 
             # Create an expander with the copyable text
             with st.expander("📋 Copy Table for Excel"):
