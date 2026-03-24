@@ -524,8 +524,7 @@ def find_duplicates_one_to_many(
             # Only skip if BOTH the product number AND the quantity are identical
             if new_product_number == other_product_numbers[idx] and new_quantity == other_quantities[idx]:
                 continue
-            if new_quantity != other_quantities[idx]:
-                continue
+        
 
         new_cm, new_family = extract_cm_family(new_ecdv)
         other_cm, other_family = extract_cm_family(ecdv)
