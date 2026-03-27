@@ -522,10 +522,11 @@ def find_duplicates_one_to_many(
 
         if new_product_number and other_product_numbers:
             # Only skip if BOTH the product number AND the quantity are identical
-            if new_product_number == other_product_numbers[idx]:
+            if new_product_number == other_product_numbers[idx] and new_quantity == other_quantities[idx]:
                 continue
-        
-
+            if new_quantity != other_quantities[idx]:
+                continue
+                
         new_cm, new_family = extract_cm_family(new_ecdv)
         other_cm, other_family = extract_cm_family(ecdv)
 
@@ -665,13 +666,7 @@ def extract_filtered_excel_inputs(
         df_filtered["Date application OEV debut"] != df_filtered["Date application OEV fin"]
     ]
 
-    # ✅ CHANGE: filter by quantity
 
-    df_filtered = df_filtered[
-
-        df_filtered["Coefficient de montage"] == new_quantity
-
-    ]
  
 
     other_product_numbers = []
