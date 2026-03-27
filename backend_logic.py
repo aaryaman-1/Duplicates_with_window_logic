@@ -666,9 +666,6 @@ def extract_filtered_excel_inputs(
         df_filtered["Date application OEV debut"] != df_filtered["Date application OEV fin"]
     ]
 
-
- 
-
     other_product_numbers = []
     other_ecdvs = []
     other_quantities = []
